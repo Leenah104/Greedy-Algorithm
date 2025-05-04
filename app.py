@@ -96,22 +96,25 @@ with st.form("task_form"):
     task_name = st.text_input("Task Name")
     task_duration = st.number_input("Duration (minutes)", min_value=1, step=1)
     task_priority = st.selectbox("Priority", [1, 2, 3], format_func=lambda x: f"{x} - {'High' if x == 1 else 'Medium' if x == 2 else 'Low'}")
-    add_button = st.form_submit_button("Add Task")
-    if add_button and task_name.strip():
-            st.session_state.tasks.append(Task(task_name, task_duration, task_priority))
-            st.success("Task added successfully!")
-
+    submitted = st.form_submit_button("Add Task")
+    if submitted and task_name.strip():
+         st.session_state.tasks.append(Task(task_name, task_duration, task_priority))
+         st.success("Task added successfully!")
+col1, col2 = st.columns(2)
+with col1:
     if st.button("Schedule Tasks (AI Version)"):
         if st.session_state.tasks:
             scheduler = TaskSchedulerAI(st.session_state.tasks.copy(), available_time)
             scheduled, total_used = scheduler.schedule()
             st.subheader("Scheduled Tasks:")
             for i, task in enumerate(scheduled, 1):
-                st.write(f"{i}. * {task.name} *- {task.duration} min - Priority: {task.priority}")
-            st.info(f"Total time used: {total_used} / {available_time} minutes")
+                st.write(f"{i}. *{task.name}* - {task.duration} min - Priority: {task.priority}")
+            progress_ratio = total_used / available_time
+            st.progress(progress_ratio)
+            st.info(f"Total time used: {total_used} / {available_time} minutes ({progress_ratio:.0%})")
         else:
             st.warning("No tasks to schedule.")
-            
+with col2:
     if st.button("Clear All Tasks"):
-      st.session_state.tasks.clear()
-      st.success("All tasks cleared!")
+        st.session_state.tasks.clear()
+        st.success("All tasks cleared!")
